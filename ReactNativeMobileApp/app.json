@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Steering Wheel Controller",
+    "slug": "steering-wheel-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.steeringwheel.app"
+    },
+    "android": {
+      "package": "com.steeringwheel.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1a1a1a"
+      }
+    }
+  }
+}

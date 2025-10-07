@@ -74,6 +74,7 @@ class SteeringWheelBridge:
     VJD_STAT_MISS = 3   # Device is not installed/configured
     VJD_STAT_UNKN = 4   # Unknown status
     
+    
     def __init__(self, host='0.0.0.0', port=5000, vjoy_device_id=1):
         """
         Initialize the steering wheel bridge server.
@@ -103,124 +104,124 @@ class SteeringWheelBridge:
                 # 🔧 FIX #2: Check if vJoy driver is enabled
                 if hasattr(_sdk, 'vJoyEnabled') and callable(_sdk.vJoyEnabled):
                     if not _sdk.vJoyEnabled():
-                        self.log("❌ vJoy driver etkin değil!")
+                        self.log("❌ vJoy driver is not enabled!")
                         self.log("")
-                        self.log("🔧 ÇÖZÜM:")
+                        self.log("🔧 SOLUTION:")
                         self.log("   1. https://github.com/njz3/vJoy/releases")
-                        self.log("   2. vJoySetup.exe'yi Administrator olarak yükleyin")
-                        self.log("   3. Bilgisayarı yeniden başlatın")
+                        self.log("   2. Install vJoySetup.exe as Administrator")
+                        self.log("   3. Restart your computer")
                         exit(1)
                 
                 # 🔧 FIX #3: Use constants for device status
                 status = _sdk.GetVJDStatus(vjoy_device_id)
                 
                 if status == self.VJD_STAT_BUSY:
-                    self.log(f"⚠️  Device {vjoy_device_id} meşgul, serbest bırakılıyor...")
+                    self.log(f"⚠️  Device {vjoy_device_id} is busy, releasing...")
                     _sdk.RelinquishVJD(vjoy_device_id)
                     time.sleep(0.5)
                     
-                    # Tekrar kontrol et
+                    # Check again
                     status = _sdk.GetVJDStatus(vjoy_device_id)
                     if status == self.VJD_STAT_BUSY:
-                        self.log("❌ Device serbest bırakılamadı!")
+                        self.log("❌ Failed to release device!")
                         self.log("")
-                        self.log("🔧 ÇÖZÜM:")
-                        self.log("   1. joy.cpl'yi kapatın (Game Controllers)")
-                        self.log("   2. vJoy kullanan programları kapatın")
-                        self.log("   3. Bilgisayarı yeniden başlatın")
+                        self.log("🔧 SOLUTION:")
+                        self.log("   1. Close joy.cpl (Game Controllers)")
+                        self.log("   2. Close programs using vJoy")
+                        self.log("   3. Restart your computer")
                         exit(1)
                         
                 elif status == self.VJD_STAT_MISS:
-                    self.log(f"❌ Device {vjoy_device_id} ayarlanmamış!")
+                    self.log(f"❌ Device {vjoy_device_id} is not configured!")
                     self.log("")
-                    self.log("🔧 ÇÖZÜM:")
-                    self.log("   1. Başlat menüsünde 'Configure vJoy' açın")
-                    self.log("   2. Device 1'i etkinleştirin")
-                    self.log("   3. X, Y, Z eksenlerini etkinleştirin")
-                    self.log("   4. 'Apply' tıklayın")
+                    self.log("🔧 SOLUTION:")
+                    self.log("   1. Open 'Configure vJoy' from Start menu")
+                    self.log("   2. Enable Device 1")
+                    self.log("   3. Enable X, Y, Z axes")
+                    self.log("   4. Click 'Apply'")
                     self.log("")
-                    self.log("VEYA terminalde çalıştırın:")
+                    self.log("OR run in terminal:")
                     self.log("   python diagnose_vjoy.py")
                     exit(1)
                     
                 elif status == self.VJD_STAT_FREE or status == self.VJD_STAT_OWN:
-                    # Önce serbest bırak
+                    # Release first
                     try:
                         _sdk.RelinquishVJD(vjoy_device_id)
                         time.sleep(0.2)
                     except:
                         pass
                     
-                    # Şimdi al
+                    # Now acquire
                     if _sdk.AcquireVJD(vjoy_device_id):
-                        self.log(f"✅ Device {vjoy_device_id} başarıyla alındı")
+                        self.log(f"✅ Device {vjoy_device_id} acquired successfully")
                     else:
-                        self.log(f"❌ Device {vjoy_device_id} alınamadı!")
-                        self.log("   Lütfen diagnose_vjoy.py çalıştırın")
+                        self.log(f"❌ Failed to acquire device {vjoy_device_id}!")
+                        self.log("   Please run diagnose_vjoy.py")
                         exit(1)
                         
             except AttributeError:
-                self.log("⚠️  Eski pyvjoy sürümü, temel kontroller yapılamıyor...")
+                self.log("⚠️  Old pyvjoy version, basic checks cannot be performed...")
             except Exception as e:
-                self.log(f"⚠️  Durum kontrolü hatası: {e}")
-                self.log("   Devam ediliyor...")
+                self.log(f"⚠️  Status check error: {e}")
+                self.log("   Continuing...")
             
             # Initialize device
             self.joystick = pyvjoy.VJoyDevice(vjoy_device_id)
-            self.log(f"🎮 vJoy Device #{vjoy_device_id} başlatıldı!")
+            self.log(f"🎮 vJoy Device #{vjoy_device_id} initialized!")
             
             # 🔧 FIX #4: Validate that required axes are available
-            self.log("🔍 Eksen kullanılabilirliği kontrol ediliyor...")
+            self.log("🔍 Checking axis availability...")
             axes_available = True
             
             # Check X-axis (steering)
             try:
                 self.joystick.set_axis(pyvjoy.HID_USAGE_X, self.AXIS_CENTER)
-                self.log("   ✅ X-Axis (Steering) kullanılabilir")
+                self.log("   ✅ X-Axis (Steering) is available")
             except Exception as e:
-                self.log(f"   ❌ X-Axis kullanılamıyor: {e}")
+                self.log(f"   ❌ X-Axis not available: {e}")
                 axes_available = False
             
             # Check Y-axis (gas/throttle)
             try:
                 self.joystick.set_axis(pyvjoy.HID_USAGE_Y, self.AXIS_MIN)
-                self.log("   ✅ Y-Axis (Gas) kullanılabilir")
+                self.log("   ✅ Y-Axis (Gas) is available")
             except Exception as e:
-                self.log(f"   ❌ Y-Axis kullanılamıyor: {e}")
+                self.log(f"   ❌ Y-Axis not available: {e}")
                 axes_available = False
             
             # Check Z-axis (brake)
             try:
                 self.joystick.set_axis(pyvjoy.HID_USAGE_Z, self.AXIS_MIN)
-                self.log("   ✅ Z-Axis (Brake) kullanılabilir")
+                self.log("   ✅ Z-Axis (Brake) is available")
             except Exception as e:
-                self.log(f"   ❌ Z-Axis kullanılamıyor: {e}")
+                self.log(f"   ❌ Z-Axis not available: {e}")
                 axes_available = False
             
             if not axes_available:
                 self.log("")
-                self.log("❌ Gerekli eksenler etkin değil!")
+                self.log("❌ Required axes are not enabled!")
                 self.log("")
-                self.log("🔧 ÇÖZÜM:")
-                self.log("   1. Başlat → 'Configure vJoy'")
-                self.log("   2. X-Axis, Y-Axis, Z-Axis'i işaretleyin")
+                self.log("🔧 SOLUTION:")
+                self.log("   1. Start → 'Configure vJoy'")
+                self.log("   2. Check X-Axis, Y-Axis, Z-Axis")
                 self.log("   3. 'Apply' → 'OK'")
-                self.log("   4. Bu programı yeniden başlatın")
+                self.log("   4. Restart this program")
                 exit(1)
             
-            self.log("✅ Tüm eksenler çalışıyor!")
+            self.log("✅ All axes are working!")
                 
         except Exception as e:
-            self.log(f"❌ vJoy Device #{vjoy_device_id} başlatılamadı!")
-            self.log(f"   Hata: {e}")
+            self.log(f"❌ Failed to initialize vJoy Device #{vjoy_device_id}!")
+            self.log(f"   Error: {e}")
             self.log("")
-            self.log("🔧 SORUN GİDERME:")
-            self.log("   1. Başlat → 'Configure vJoy'")
-            self.log("   2. Device 1 etkin")
-            self.log("   3. X-Axis, Y-Axis, Z-Axis etkin")
-            self.log("   4. 'Apply' tıklayın")
+            self.log("🔧 TROUBLESHOOTING:")
+            self.log("   1. Start → 'Configure vJoy'")
+            self.log("   2. Device 1 enabled")
+            self.log("   3. X-Axis, Y-Axis, Z-Axis enabled")
+            self.log("   4. Click 'Apply'")
             self.log("")
-            self.log("   Veya çalıştırın: python diagnose_vjoy.py")
+            self.log("   Or run: python diagnose_vjoy.py")
             exit(1)
         
         # Current values for tracking
@@ -279,12 +280,12 @@ class SteeringWheelBridge:
         # Y: -1.0 (full left) to +1.0 (full right)
         steering_value = self.map_to_axis(y, -1.0, 1.0)
         
-        # 🔧 FIX #10: TERS ÇEVRİLDİ - Oyunlar genellikle Z=Gaz, Y=Fren bekler
-        # MAP GAS to Z-AXIS in vJoy (DÜZELTME: Önceden Y-Axis'teydi)
+        # 🔧 FIX #10: REVERSED - Games typically expect Z=Gas, Y=Brake
+        # MAP GAS to Z-AXIS in vJoy (FIX: Previously was Y-Axis)
         # Gas: False = 0, True = full throttle
         gas_value = self.AXIS_MAX if gas else self.AXIS_MIN
         
-        # MAP BRAKE to Y-AXIS in vJoy (DÜZELTME: Önceden Z-Axis'teydi)
+        # MAP BRAKE to Y-AXIS in vJoy (FIX: Previously was Z-Axis)
         # Brake: False = 0, True = full brake
         brake_value = self.AXIS_MAX if brake else self.AXIS_MIN
         
@@ -292,8 +293,8 @@ class SteeringWheelBridge:
         try:
             # Send all three axes
             self.joystick.set_axis(pyvjoy.HID_USAGE_X, steering_value)
-            self.joystick.set_axis(pyvjoy.HID_USAGE_Z, gas_value)      # Z-Axis = GAS (DEĞİŞTİRİLDİ)
-            self.joystick.set_axis(pyvjoy.HID_USAGE_Y, brake_value)    # Y-Axis = BRAKE (DEĞİŞTİRİLDİ)
+            self.joystick.set_axis(pyvjoy.HID_USAGE_Z, gas_value)      # Z-Axis = GAS (CHANGED)
+            self.joystick.set_axis(pyvjoy.HID_USAGE_Y, brake_value)    # Y-Axis = BRAKE (CHANGED)
             
             # Update tracking values
             self.current_steering = steering_value
@@ -305,9 +306,9 @@ class SteeringWheelBridge:
             # self.log(f"   [VJOY] X={steering_value:5d} Y={gas_value:5d} Z={brake_value:5d}")
             
         except Exception as e:
-            self.log(f"❌ CRITICAL: Eksen güncelleme hatası: {e}")
-            self.log("   vJoy device artık yanıt vermiyor!")
-            self.log("   Programı yeniden başlatın veya diagnose_vjoy.py çalıştırın")
+            self.log(f"❌ CRITICAL: Axis update error: {e}")
+            self.log("   vJoy device is no longer responding!")
+            self.log("   Restart the program or run diagnose_vjoy.py")
             raise  # Re-raise exception to stop execution
     
     def reset_steering_wheel(self):
@@ -412,8 +413,8 @@ class SteeringWheelBridge:
         self.log("")
         self.log("🎮 Steering Wheel Mapping:")
         self.log("   • Y-axis (tilt L/R) → X-AXIS (steering)")
-        self.log("   • Gas button       → Z-AXIS (throttle) ✅ DÜZELTİLDİ")
-        self.log("   • Brake button     → Y-AXIS (brake) ✅ DÜZELTİLDİ")
+        self.log("   • Gas button       → Z-AXIS (throttle) ✅ FIXED")
+        self.log("   • Brake button     → Y-AXIS (brake) ✅ FIXED")
         self.log("")
         self.log("🎯 vJoy Configuration (FIXED):")
         self.log(f"   • Range: {self.AXIS_MIN} (0x{self.AXIS_MIN:04X}) to {self.AXIS_MAX} (0x{self.AXIS_MAX:04X})")
@@ -521,6 +522,26 @@ def test_vjoy_movement():
 
 def main():
     """Main entry point for the application."""
+    
+    # ⚠️ vJoy INSTALLATION WARNING
+    print("=" * 70)
+    print("⚠️  IMPORTANT: vJoy INSTALLATION REQUIRED")
+    print("=" * 70)
+    print("")
+    print("This program requires vJoy driver to be installed!")
+    
+    if not VJOY_AVAILABLE:
+        print("❌ vJoy is not installed! Please follow the steps above.")
+        input("\nPress ENTER to exit...")
+        exit(1)
+    
+    response = input("Is vJoy installed? (Y/N) [Y]: ").strip().upper()
+    if response == "N":
+        print("\n⚠️ Please install vJoy first and try again.")
+        input("\nPress ENTER to exit...")
+        exit(1)
+    
+    print("")
     
     # 🔧 FIX #9: Check admin privileges on startup
     check_admin_privileges()

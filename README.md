@@ -140,7 +140,7 @@ The system provides low-latency (<50ms) control with smooth steering response, m
 2. **vJoy Virtual Joystick Driver**
 
    - Version 2.1.9 or later
-   - Download: [https://github.com/njz3/vJoy/releases](https://github.com/njz3/vJoy/releases)
+   - Download: [https://sourceforge.net/projects/vjoystick/](https://sourceforge.net/projects/vjoystick/)
 
 3. **Python 3.7+** (if running from source)
 

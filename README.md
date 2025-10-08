@@ -891,7 +891,7 @@ A: Yes, modify the axis assignments in `main.py` (vJoy axes) and configure game 
 ## 📞 Contact & Links
 
 - **GitHub Repository**: [SteeringWheel](https://github.com/enesmuzaffer22/SteeringWheel)
-- **vJoy Driver**: [https://github.com/njz3/vJoy/releases](https://github.com/njz3/vJoy/releases)
+- **vJoy Driver**: [https://sourceforge.net/projects/vjoystick/](https://sourceforge.net/projects/vjoystick/)
 - **Expo Documentation**: [https://docs.expo.dev](https://docs.expo.dev)
 - **React Native**: [https://reactnative.dev](https://reactnative.dev)
 

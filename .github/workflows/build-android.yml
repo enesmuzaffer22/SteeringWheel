@@ -5,10 +5,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'ReactNativeMobileApp/**'
+      - '.github/workflows/build-android.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ReactNativeMobileApp
     
     steps:
       - name: Checkout repository
@@ -19,6 +26,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: ReactNativeMobileApp/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -46,14 +54,17 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: app-release
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: steering-wheel-app-release
+          path: ReactNativeMobileApp/android/app/build/outputs/apk/release/app-release.apk
 
       - name: Create Release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.${{ github.run_number }}
-          files: android/app/build/outputs/apk/release/app-release.apk
+          name: Steering Wheel App v1.0.${{ github.run_number }}
+          files: ReactNativeMobileApp/android/app/build/outputs/apk/release/app-release.apk
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

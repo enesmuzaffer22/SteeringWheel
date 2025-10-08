@@ -5,19 +5,27 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "plugins": ["./app-config-plugin.js"],
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#1a1a1a"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.steeringwheel.app"
+      "bundleIdentifier": "com.steeringwheel.app",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "This app requires local network access to connect to the steering wheel device.",
+        "NSBonjourServices": ["_http._tcp"]
+      }
     },
     "android": {
       "package": "com.steeringwheel.app",
       "adaptiveIcon": {
         "backgroundColor": "#1a1a1a"
-      }
+      },
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "ACCESS_WIFI_STATE"],
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "network_security_config"
     },
     "extra": {
       "eas": {

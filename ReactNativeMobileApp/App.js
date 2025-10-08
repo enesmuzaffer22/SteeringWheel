@@ -154,15 +154,43 @@ export default function App() {
       // Connection error
       wsRef.current.onerror = (error) => {
         console.error("WebSocket error:", error);
+        console.error(
+          "WebSocket error details:",
+          JSON.stringify(error, null, 2)
+        );
         setConnectionStatus("Connection Failed");
 
         // Show error alert only once
         if (!hasShownErrorRef.current) {
           hasShownErrorRef.current = true;
+
+          // Get error details
+          const errorMessage = error?.message || "Unknown error";
+          const errorType = error?.type || "Unknown type";
+          const errorCode = error?.code || "No code";
+
           Alert.alert(
             "Connection Failed",
-            `Could not connect to server.\n\nMake sure:\n• Your PC is running the server\n• Both devices are on the same Wi-Fi\n• You're using the correct IP address\n\nYour phone IP: Check in terminal\nServer should show: "0.0.0.0:5000"`,
+            `Could not connect to server.\n\n` +
+              `Error Details:\n` +
+              `• Type: ${errorType}\n` +
+              `• Message: ${errorMessage}\n` +
+              `• Code: ${errorCode}\n\n` +
+              `Server URL: ${serverUrl}\n\n` +
+              `Make sure:\n` +
+              `• Your PC is running the server\n` +
+              `• Both devices are on the same Wi-Fi\n` +
+              `• You're using the correct IP address\n` +
+              `• Firewall allows port 5000\n\n` +
+              `Server should show: "0.0.0.0:5000"`,
             [
+              {
+                text: "Copy URL",
+                onPress: () => {
+                  console.log("Server URL:", serverUrl);
+                  hasShownErrorRef.current = false;
+                },
+              },
               {
                 text: "OK",
                 onPress: () => {
@@ -177,10 +205,38 @@ export default function App() {
       // Connection closed
       wsRef.current.onclose = (event) => {
         console.log("WebSocket closed:", event.code, event.reason);
+        console.log(
+          "WebSocket close details:",
+          JSON.stringify(
+            {
+              code: event.code,
+              reason: event.reason,
+              wasClean: event.wasClean,
+            },
+            null,
+            2
+          )
+        );
+
         setConnectionStatus("Disconnected");
         setIsConnected(false);
         stopGyroscope();
         reconnectAttemptRef.current = 0;
+
+        // Show alert if connection closed unexpectedly
+        if (!event.wasClean && event.code !== 1000) {
+          Alert.alert(
+            "Connection Lost",
+            `Connection closed unexpectedly.\n\n` +
+              `Code: ${event.code}\n` +
+              `Reason: ${event.reason || "No reason provided"}\n\n` +
+              `Common codes:\n` +
+              `• 1006: Connection failed (server not reachable)\n` +
+              `• 1002: Protocol error\n` +
+              `• 1003: Unsupported data`,
+            [{ text: "OK" }]
+          );
+        }
 
         // NO auto-reconnect - user must manually reconnect
       };
